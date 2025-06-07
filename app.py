@@ -1,39 +1,65 @@
-
-import os
 from flask import Flask, request, jsonify
+import logging
 
 app = Flask(__name__)
 
-# Home route
 @app.route('/')
-def home():
-    return "Welcome to the Loan Webhook!"
+def index():
+    return "✅ Loan Webhook is deployed and running."
 
-# Loan inquiry route (POST)
-@app.route('/loan', methods=['POST'])
-def loan_inquiry():
-    # Get data from request
-    data = request.get_json()
-    
-    # Example loan logic
-    loan_amount = data.get('loan_amount', 0)
-    loan_years = data.get('loan_years', 0)
-    
-    if loan_amount and loan_years:
-        # Just an example logic: calculate the interest
-        interest_rate = 0.1  # 10% interest rate
-        total_payment = loan_amount * (1 + interest_rate * loan_years)
-        monthly_payment = total_payment / (loan_years * 12)
-        
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    try:
+        req = request.get_json()
+        logging.info("📥 Received request:")
+        logging.info(req)
+
+        # Get parameters safely
+        parameters = req.get("sessionInfo", {}).get("parameters", {})
+        tag = req.get("fulfillmentInfo", {}).get("tag", "")
+        logging.info(f"🔖 Triggered by tag: {tag}")
+
+        # Extract parameters with defaults
+        loan_type = parameters.get("loan_type", "not given")
+        age = parameters.get("age", "not given")
+        income = parameters.get("monthly_income", "not given")
+        employment = parameters.get("employment_type", "not given")
+        credit_score = parameters.get("credit_score", "not given")
+        existing_emi = parameters.get("existing_emi", "not given")
+
+        # Compose response message
+        offer_message = (
+            f"We received your application for a {loan_type} loan. "
+            f"Profile: Age {age}, Income ₹{income}, Employment: {employment}, "
+            f"Credit Score: {credit_score}, EMI: ₹{existing_emi}."
+        )
+
         return jsonify({
-            "message": f"Loan amount of {loan_amount} for {loan_years} years will have a monthly payment of {monthly_payment:.2f}. Total payment: {total_payment:.2f}."
-        })
-    else:
-        return jsonify({
-            "message": "Please provide both loan amount and loan years."
+            "fulfillment_response": {
+                "messages": [
+                    {
+                        "text": {
+                            "text": [offer_message]
+                        }
+                    }
+                ]
+            }
         })
 
-if __name__ == '__main__':
-    # Get the port from the environment variable or default to 8080
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port, debug=False)  # Set debug to False for production
+    except Exception as e:
+        logging.error(f"❌ Exception occurred: {e}")
+        return jsonify({
+            "fulfillment_response": {
+                "messages": [
+                    {
+                        "text": {
+                            "text": ["An error occurred while processing your loan application. Please try again later."]
+                        }
+                    }
+                ]
+            }
+        })
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    app.run(debug=True, host="0.0.0.0", port=8080)
