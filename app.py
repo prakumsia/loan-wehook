@@ -1,39 +1,43 @@
-
-import os
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Home route
-@app.route('/')
-def home():
-    return "Welcome to the Loan Webhook!"
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    req = request.get_json()
+    print("📥 Incoming request:")
+    print(req)
 
-# Loan inquiry route (POST)
-@app.route('/loan', methods=['POST'])
-def loan_inquiry():
-    # Get data from request
-    data = request.get_json()
-    
-    # Example loan logic
-    loan_amount = data.get('loan_amount', 0)
-    loan_years = data.get('loan_years', 0)
-    
-    if loan_amount and loan_years:
-        # Just an example logic: calculate the interest
-        interest_rate = 0.1  # 10% interest rate
-        total_payment = loan_amount * (1 + interest_rate * loan_years)
-        monthly_payment = total_payment / (loan_years * 12)
-        
-        return jsonify({
-            "message": f"Loan amount of {loan_amount} for {loan_years} years will have a monthly payment of {monthly_payment:.2f}. Total payment: {total_payment:.2f}."
-        })
-    else:
-        return jsonify({
-            "message": "Please provide both loan amount and loan years."
-        })
+    # Get parameters from sessionInfo
+    parameters = req.get("sessionInfo", {}).get("parameters", {})
 
-if __name__ == '__main__':
-    # Get the port from the environment variable or default to 8080
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port, debug=False)  # Set debug to False for production
+    # Optional: Get the tag that triggered this webhook
+    tag = req.get("fulfillmentInfo", {}).get("tag", "")
+    print(f"🔖 Triggered by tag: {tag}")
+
+    # Extract user data
+    loan_type = parameters.get("loan_type", "unknown loan")
+    age = parameters.get("age")
+    income = parameters.get("monthly_income")
+    employment = parameters.get("employment_type")
+    credit_score = parameters.get("credit_score")
+    existing_emi = parameters.get("existing_emi")
+
+    # Simulate business logic (replace with actual offer calc or API call)
+    offer_message = f"We’ve received your application for a {loan_type}. Based on your profile (income: ₹{income}, credit score: {credit_score}), we’ll now generate offers."
+
+    # Respond to Dialogflow CX
+    return jsonify({
+        "fulfillment_response": {
+            "messages": [
+                {
+                    "text": {
+                        "text": [offer_message]
+                    }
+                }
+            ]
+        }
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=8080)
