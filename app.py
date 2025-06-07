@@ -8,25 +8,26 @@ def webhook():
     print("📥 Incoming request:")
     print(req)
 
-    # Get parameters from sessionInfo
+    # Get parameters safely
     parameters = req.get("sessionInfo", {}).get("parameters", {})
-
-    # Optional: Get the tag that triggered this webhook
     tag = req.get("fulfillmentInfo", {}).get("tag", "")
     print(f"🔖 Triggered by tag: {tag}")
 
-    # Extract user data
-    loan_type = parameters.get("loan_type", "unknown loan")
-    age = parameters.get("age")
-    income = parameters.get("monthly_income")
-    employment = parameters.get("employment_type")
-    credit_score = parameters.get("credit_score")
-    existing_emi = parameters.get("existing_emi")
+    # Extract and log parameters
+    loan_type = parameters.get("loan_type", "not given")
+    age = parameters.get("age", "not given")
+    income = parameters.get("monthly_income", "not given")
+    employment = parameters.get("employment_type", "not given")
+    credit_score = parameters.get("credit_score", "not given")
+    existing_emi = parameters.get("existing_emi", "not given")
 
-    # Simulate business logic (replace with actual offer calc or API call)
-    offer_message = f"We’ve received your application for a {loan_type}. Based on your profile (income: ₹{income}, credit score: {credit_score}), we’ll now generate offers."
+    # Build safe response
+    offer_message = (
+        f"We received your application for a {loan_type} loan. "
+        f"Profile: Age {age}, Income ₹{income}, Employment: {employment}, "
+        f"Credit Score: {credit_score}, EMI: ₹{existing_emi}."
+    )
 
-    # Respond to Dialogflow CX
     return jsonify({
         "fulfillment_response": {
             "messages": [
