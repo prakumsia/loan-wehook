@@ -27,16 +27,15 @@ def webhook():
         credit_score = parameters.get("credit_score", "not given")
         existing_emi = parameters.get("existing_emi", "not given")
 
-        # Ensure that income and existing_emi are in the correct format for the response
-        try:
-            income = f"₹{int(income):,}"
-        except ValueError:
-            income = "₹not given"
+        # Format income and EMI values with the ₹ symbol
+        def format_currency(value):
+            try:
+                return "₹{:,}".format(int(value))
+            except ValueError:
+                return "₹not given"
 
-        try:
-            existing_emi = f"₹{int(existing_emi):,}"
-        except ValueError:
-            existing_emi = "₹not given"
+        income = format_currency(income)
+        existing_emi = format_currency(existing_emi)
 
         # Compose response message
         offer_message = (
@@ -45,9 +44,7 @@ def webhook():
             f"Credit Score: {credit_score}, EMI: {existing_emi}."
         )
 
-        # Ensure proper character encoding
-        offer_message = offer_message.encode('utf-8').decode('utf-8')
-
+        # Return the formatted message
         return jsonify({
             "fulfillment_response": {
                 "messages": [
