@@ -10,14 +10,18 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        # Log the raw request body to check what is being received
+        # Log the raw request body to debug
         raw_data = request.get_data(as_text=True)
-        logging.info(f"📥 Received request body: {raw_data}")
-        
+        logging.info(f"📥 Raw request body: {raw_data}")
+
+        # Try to decode the JSON body
         req = request.get_json()
         logging.info(f"📥 Decoded JSON: {req}")
 
-        # Get parameters safely
+        if not req:
+            raise ValueError("No JSON found in the request")
+
+        # Process parameters safely
         parameters = req.get("sessionInfo", {}).get("parameters", {})
         loan_type = parameters.get("loan_type", "not given")
         age = parameters.get("age", "not given")
@@ -26,7 +30,6 @@ def webhook():
         credit_score = parameters.get("credit_score", "not given")
         existing_emi = parameters.get("existing_emi", "not given")
 
-        # Compose response message
         offer_message = (
             f"We received your application for a {loan_type} loan. "
             f"Profile: Age {age}, Income ₹{income}, Employment: {employment}, "
@@ -38,7 +41,7 @@ def webhook():
         })
 
     except Exception as e:
-        logging.error(f"❌ Error processing request: {e}")
+        logging.error(f"❌ Error: {e}")
         return jsonify({
             "message": f"An error occurred while processing your loan application: {str(e)}. Please try again later."
         })
