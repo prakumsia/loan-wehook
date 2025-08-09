@@ -16,6 +16,10 @@ def webhook():
 
         # Get parameters safely
         parameters = req.get("sessionInfo", {}).get("parameters", {})
+        tag = req.get("fulfillmentInfo", {}).get("tag", "")
+        logging.info(f"🔖 Triggered by tag: {tag}")
+
+        # Extract parameters with defaults
         loan_type = parameters.get("loan_type", "not given")
         age = parameters.get("age", "not given")
         income = parameters.get("monthly_income", "not given")
@@ -23,9 +27,16 @@ def webhook():
         credit_score = parameters.get("credit_score", "not given")
         existing_emi = parameters.get("existing_emi", "not given")
 
-        # Ensure proper formatting of the currency
-        income = f"₹{income}"
-        existing_emi = f"₹{existing_emi}"
+        # Ensure that income and existing_emi are in the correct format for the response
+        try:
+            income = f"₹{int(income):,}"
+        except ValueError:
+            income = "₹not given"
+
+        try:
+            existing_emi = f"₹{int(existing_emi):,}"
+        except ValueError:
+            existing_emi = "₹not given"
 
         # Compose response message
         offer_message = (
