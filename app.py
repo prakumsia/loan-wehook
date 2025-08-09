@@ -14,29 +14,23 @@ def webhook():
         logging.info("📥 Received request:")
         logging.info(req)
 
-        # Get parameters directly from the request
+        # Get parameters safely
         parameters = req.get("sessionInfo", {}).get("parameters", {})
-        
-        # Extract parameters safely
-        loan_type = parameters.get("loan_type", "not provided")
-        age = parameters.get("age", "not provided")
-        income = parameters.get("monthly_income", "not provided")
-        employment = parameters.get("employment_type", "not provided")
-        credit_score = parameters.get("credit_score", "not provided")
-        existing_emi = parameters.get("existing_emi", "not provided")
+        loan_type = parameters.get("loan_type", "not given")
+        age = parameters.get("age", "not given")
+        income = parameters.get("monthly_income", "not given")
+        employment = parameters.get("employment_type", "not given")
+        credit_score = parameters.get("credit_score", "not given")
+        existing_emi = parameters.get("existing_emi", "not given")
 
-        # Compose the response message
+        # Compose response message
         offer_message = (
-            f"Loan Application received:\n"
-            f"Loan Type: {loan_type}\n"
-            f"Age: {age}\n"
-            f"Monthly Income: ₹{income}\n"
-            f"Employment: {employment}\n"
-            f"Credit Score: {credit_score}\n"
-            f"Existing EMI: ₹{existing_emi}"
+            f"We received your application for a {loan_type} loan. "
+            f"Profile: Age {age}, Income ₹{income}, Employment: {employment}, "
+            f"Credit Score: {credit_score}, EMI: ₹{existing_emi}."
         )
 
-        # Return the response directly (no Dialogflow-specific structure)
+        # Return the response directly
         return jsonify({
             "message": offer_message
         })
@@ -44,7 +38,7 @@ def webhook():
     except Exception as e:
         logging.error(f"❌ Error processing request: {e}")
         return jsonify({
-            "message": f"An error occurred: {str(e)}. Please try again later."
+            "message": f"An error occurred while processing your loan application: {str(e)}. Please try again later."
         })
 
 if __name__ == "__main__":
