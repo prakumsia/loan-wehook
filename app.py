@@ -45,6 +45,9 @@ def webhook():
             f"Credit Score: {credit_score}, EMI: {existing_emi}."
         )
 
+        # Ensure proper character encoding
+        offer_message = offer_message.encode('utf-8').decode('utf-8')
+
         return jsonify({
             "fulfillment_response": {
                 "messages": [
