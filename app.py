@@ -10,9 +10,12 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
+        # Log the raw request body to check what is being received
+        raw_data = request.get_data(as_text=True)
+        logging.info(f"📥 Received request body: {raw_data}")
+        
         req = request.get_json()
-        logging.info("📥 Received request:")
-        logging.info(req)
+        logging.info(f"📥 Decoded JSON: {req}")
 
         # Get parameters safely
         parameters = req.get("sessionInfo", {}).get("parameters", {})
@@ -30,7 +33,6 @@ def webhook():
             f"Credit Score: {credit_score}, EMI: ₹{existing_emi}."
         )
 
-        # Return the response directly
         return jsonify({
             "message": offer_message
         })
