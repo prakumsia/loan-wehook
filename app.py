@@ -27,13 +27,14 @@ def webhook():
         credit_score = parameters.get("credit_score", "not given")
         existing_emi = parameters.get("existing_emi", "not given")
 
-        # Format income and EMI values with the ₹ symbol
+        # Function to format currency with ₹ symbol
         def format_currency(value):
             try:
-                return "₹{:,}".format(int(value))
+                return f"₹{int(value):,}"
             except ValueError:
                 return "₹not given"
 
+        # Format values properly
         income = format_currency(income)
         existing_emi = format_currency(existing_emi)
 
@@ -44,7 +45,6 @@ def webhook():
             f"Credit Score: {credit_score}, EMI: {existing_emi}."
         )
 
-        # Return the formatted message
         return jsonify({
             "fulfillment_response": {
                 "messages": [
