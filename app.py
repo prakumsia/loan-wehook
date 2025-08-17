@@ -112,8 +112,3 @@ def verify_score():
             "message": "Could not fetch credit score, please try again later.",
             "error": str(e)
         }), 500
-
-# Run the app with debug mode enabled
-if __name__ == "__main__":
-    logging.debug("Starting Flask application in debug mode...")
-    app.run(debug=True, host="0.0.0.0", port=8080)
