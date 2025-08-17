@@ -12,7 +12,7 @@ PARTNER_ID = "ESP00015"
 API_TOKEN = "f0c63c79b863855fe6a41f97f50b380d8dc5d1d0"
 API_URL = "https://api.bharateverify.com/api/v1/credit-bureau/get-score-only"
 
-# Utility: Generate JWT
+# ✅ Utility: Generate JWT
 def create_jwt(partner_id, api_token):
     header = {"typ": "JWT", "alg": "HS256"}
     payload = {
@@ -21,11 +21,13 @@ def create_jwt(partner_id, api_token):
     }
 
     def b64url(data):
-        return base64.urlsafe_b64encode(data).decode().rstrip("=")
+        return base64.urlsafe_b64encode(data).decode().replace("=", "")
 
-    header_enc = b64url(json.dumps(header).encode())
-    payload_enc = b64url(json.dumps(payload).encode())
-    signature = hmac.new(api_token.encode(), f"{header_enc}.{payload_enc}".encode(), hashlib.sha256).digest()
+    header_enc = b64url(json.dumps(header, separators=(",", ":")).encode())
+    payload_enc = b64url(json.dumps(payload, separators=(",", ":")).encode())
+
+    signing_input = f"{header_enc}.{payload_enc}".encode()
+    signature = hmac.new(api_token.encode(), signing_input, hashlib.sha256).digest()
     signature_enc = b64url(signature)
 
     return f"{header_enc}.{payload_enc}.{signature_enc}"
@@ -34,6 +36,7 @@ def create_jwt(partner_id, api_token):
 def index():
     return "✅ Loan Webhook is deployed and running."
 
+# 📌 Webhook for Dialogflow CX or other bots
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
@@ -55,7 +58,7 @@ def webhook():
         def format_currency(value):
             try:
                 return f"₹{int(value):,}"
-            except ValueError:
+            except Exception:
                 return "₹not given"
 
         income = format_currency(income)
@@ -112,3 +115,8 @@ def verify_score():
             "message": "Could not fetch credit score, please try again later.",
             "error": str(e)
         }), 500
+
+# Run the app with debug mode enabled (Gunicorn will override this in production)
+if __name__ == "__main__":
+    logging.debug("Starting Flask application in debug mode...")
+    app.run(debug=True, host="0.0.0.0", port=8080)
