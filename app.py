@@ -21,7 +21,7 @@ def create_jwt(partner_id, api_token):
     }
 
     def b64url(data):
-        return base64.urlsafe_b64encode(data).decode().rstrip("=")
+        return base64.urlsafe_b64encode(data).decode().replace("=", "")
 
     header_enc = b64url(json.dumps(header, separators=(",", ":")).encode())
     payload_enc = b64url(json.dumps(payload, separators=(",", ":")).encode())
@@ -30,9 +30,7 @@ def create_jwt(partner_id, api_token):
     signature = hmac.new(api_token.encode(), signing_input, hashlib.sha256).digest()
     signature_enc = b64url(signature)
 
-    jwt_token = f"{header_enc}.{payload_enc}.{signature_enc}"
-    logging.debug(f"🔑 Generated JWT: {jwt_token}")
-    return jwt_token
+    return f"{header_enc}.{payload_enc}.{signature_enc}"
 
 @app.route('/')
 def index():
@@ -99,6 +97,7 @@ def verify_score():
 
         # Generate JWT
         jwt_token = create_jwt(PARTNER_ID, API_TOKEN)
+        logging.debug(f"🛠 Final JWT: {jwt_token}")  # 👈 added this line
 
         headers = {
             "Content-Type": "application/json",
