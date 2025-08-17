@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # 🔑 BharatEVerify credentials
 PARTNER_ID = "ESP00015"
-API_TOKEN = "fed46d948b938d345ba385098f061b5841624114"
+API_TOKEN = "f0c63c79b863855fe6a41f97f50b380d8dc5d1d0"
 API_URL = "https://api.bharateverify.com/api/v1/credit-bureau/get-score-only"
 
 # Utility: Generate JWT
