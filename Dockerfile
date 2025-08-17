@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app
+COPY . .
 
-# Cloud Run requires the app to listen on $PORT
-CMD exec gunicorn -b :$PORT app:app
+# Cloud Run will inject $PORT, so gunicorn must bind to it
+CMD ["gunicorn", "-b", ":$PORT", "app:app"]
